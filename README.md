@@ -2,7 +2,7 @@
 
 > The apps, generators, and bench runner in this repository were generated with [Claude Fable 5](https://www.anthropic.com/news/claude-fable-5-mythos-5) and reviewed by the Vitest team. The results below were measured by hand on the hardware stated in each section.
 
-Generated reference apps for measuring Vitest performance. Each app stands for one kind of project: a tiny utility package, a library, barrel-file graphs, DOM component suites, a dependency-heavy service, a 1300-module monolith, and a long-running DOM suite. The bench runner measures the options that change run time on each of them: `pool`, `environment` (jsdom, happy-dom, and headless Chromium via browser mode), `isolate`, `fsModuleCache`, `maxWorkers`, and cold vs warm caches.
+Generated reference apps for measuring Vitest performance. Each app stands for one kind of project: a tiny utility package, a library, barrel-file graphs, DOM component suites, a dependency-heavy service, a 1300-module monolith, a long-running DOM suite, and a large non-isolated suite with mocking setup files. The bench runner measures the options that change run time on each of them: `pool`, `environment` (jsdom, happy-dom, and headless Chromium via browser mode), `isolate`, `fsModuleCache`, `maxWorkers`, and cold vs warm caches.
 
 ## Usage
 
@@ -256,6 +256,12 @@ A long-running DOM suite: 80 jsdom test files through 2 workers, each file holdi
 | vmForks | jsdom | 6.02s | 5.15s | −15% | 6.03s | 5.13s | −15% |
 | forks | happy-dom | — | — | — | 11.38s | 10.89s | −4% |
 | **vmForks** | **happy-dom** | — | — | — | 5.43s | 4.06s | −25% |
+
+### setup-mocks
+
+A large suite meant to run with `isolate: false`: a shared tree of 1500 modules that every test file evaluates through its root, 800 test files that each also import one module of their own, and 6 setup files that each `vi.mock` a service the tests assert on. A reused worker re-runs the setup files before each of its files, so whatever Vitest does per file or per run request (resolving setup files and mock paths, asking the main process for warm modules) is paid hundreds of times per worker, and each round trip to the main process waits behind the other workers' calls. The 25% and 50% `maxWorkers` rows show how that cost scales with the number of workers. `isolate: true` takes about a minute here and only runs in the full matrix. Modelled on [vjeux/vitest-warm-rpc-repro](https://github.com/vjeux/vitest-warm-rpc-repro).
+
+Not measured for 4.1.10 vs 5.0.0 yet.
 
 ### cpu-bound
 
