@@ -2,7 +2,7 @@
 
 > The apps, generators, and bench runner in this repository were generated with [Claude Fable 5](https://www.anthropic.com/news/claude-fable-5-mythos-5) and reviewed by the Vitest team. The results below were measured by hand on the hardware stated in each section.
 
-Generated reference apps for measuring Vitest performance. Each app stands for one kind of project: a tiny utility package, a library, barrel-file graphs, DOM component suites, a dependency-heavy service, a 1300-module monolith, a long-running DOM suite, and a large non-isolated suite with mocking setup files. The bench runner measures the options that change run time on each of them: `pool`, `environment` (jsdom, happy-dom, and headless Chromium via browser mode), `isolate`, `fsModuleCache`, `maxWorkers`, and cold vs warm caches.
+Generated reference apps for measuring Vitest performance. Each app stands for one kind of project: a tiny utility package, a library, barrel-file graphs, DOM component suites, a dependency-heavy service, a 1300-module monolith, a long-running DOM suite, a large non-isolated suite with mocking setup files, and a non-isolated suite whose large graphs arrive after each worker's first file. The bench runner measures the options that change run time on each of them: `pool`, `environment` (jsdom, happy-dom, and headless Chromium via browser mode), `isolate`, `fsModuleCache`, `maxWorkers`, and cold vs warm caches.
 
 ## Usage
 
@@ -260,6 +260,12 @@ A long-running DOM suite: 80 jsdom test files through 2 workers, each file holdi
 ### setup-mocks
 
 A large suite meant to run with `isolate: false`: a shared tree of 1500 modules that every test file evaluates through its root, 800 test files that each also import one module of their own, and 6 setup files that each `vi.mock` a service the tests assert on. A reused worker re-runs the setup files before each of its files, so whatever Vitest does per file or per run request (resolving setup files and mock paths, asking the main process for warm modules) is paid hundreds of times per worker, and each round trip to the main process waits behind the other workers' calls. The 25% and 50% `maxWorkers` rows show how that cost scales with the number of workers; with `maxWorkers: 1` all files go to one worker as a single run request, so only the per-file cost remains, with no other worker waiting on the main process. `isolate: true` takes about a minute here and only runs in the full matrix. Modelled on [vjeux/vitest-warm-rpc-repro](https://github.com/vjeux/vitest-warm-rpc-repro).
+
+Not measured for 4.1.10 vs 5.0.0 yet.
+
+### late-graphs
+
+A non-isolated suite where every worker's first test file is trivial and the files after it bring large graphs of their own: 4 trivial files that sort first (the app sorts files by name and fixes `maxWorkers` to 4), then 24 test files that each import their own chain of 250 modules. Anything a worker fetches or decides once, from its first run request, says nothing about the modules its later files need, so a per-worker shortcut shows up here as one round trip per module. A setup file with no work in it lets a watch rerun be triggered by touching it.
 
 Not measured for 4.1.10 vs 5.0.0 yet.
 

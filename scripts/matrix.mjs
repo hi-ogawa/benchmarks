@@ -144,6 +144,14 @@ const APPS = {
       { pool: 'forks', env: 'node', isolate: f, fsCache: f, state: 'warm', workers: '50%' },
     ],
   },
+  'late-graphs': {
+    best: { pool: 'forks', env: 'node', isolate: f, fsCache: t, state: 'warm' },
+    envs: ['node'],
+    primary: 'node',
+    // the shape only exists when workers are reused across files, so only
+    // isolate:false; the app fixes maxWorkers itself
+    dims: { pool: ['forks', 'threads'], env: ['node'], isolate: [f], fsCache: [f, t], state: ['cold', 'warm'] },
+  },
   'cpu-bound': {
     best: { pool: 'forks', env: 'node', isolate: f, fsCache: f, state: 'warm', workers: '100%' },
     envs: ['node'],
