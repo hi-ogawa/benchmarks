@@ -2,7 +2,7 @@
 
 > The apps, generators, and bench runner in this repository were generated with [Claude Fable 5](https://www.anthropic.com/news/claude-fable-5-mythos-5) and reviewed by the Vitest team. The results below were measured by hand on the hardware stated in each section.
 
-Generated reference apps for measuring Vitest performance. Each app stands for one kind of project: a tiny utility package, a library, barrel-file graphs, DOM component suites, a dependency-heavy service, a 1300-module monolith, a long-running DOM suite, a large non-isolated suite with mocking setup files, and a non-isolated suite whose large graphs arrive after each worker's first file. The bench runner measures the options that change run time on each of them: `pool`, `environment` (jsdom, happy-dom, and headless Chromium via browser mode), `isolate`, `fsModuleCache`, `maxWorkers`, and cold vs warm caches.
+Generated reference apps for measuring Vitest performance. Each app stands for one kind of project: a tiny utility package, a library, barrel-file graphs, DOM component suites, a dependency-heavy service, a 1300-module monolith, a long-running DOM suite, a large non-isolated suite with mocking setup files, and a non-isolated suite whose later files reuse graphs other workers loaded. The bench runner measures the options that change run time on each of them: `pool`, `environment` (jsdom, happy-dom, and headless Chromium via browser mode), `isolate`, `fsModuleCache`, `maxWorkers`, and cold vs warm caches.
 
 ## Usage
 
@@ -265,7 +265,7 @@ Not measured for 4.1.10 vs 5.0.0 yet.
 
 ### late-graphs
 
-A non-isolated suite where every worker's first test file is trivial and the files after it bring large graphs of their own: 4 trivial files that sort first (the app sorts files by name and fixes `maxWorkers` to 4), then 24 test files that each import their own chain of 250 modules. Anything a worker fetches or decides once, from its first run request, says nothing about the modules its later files need, so a per-worker shortcut shows up here as one round trip per module. A setup file with no work in it lets a watch rerun be triggered by touching it.
+A non-isolated suite where every worker's first test file is trivial and later files reuse large graphs that files on other workers loaded earlier: 4 trivial files that sort first (the app sorts files by name and fixes `maxWorkers` to 4), then 24 test files sharing 12 chains of 250 modules, so the second dozen reuses the chains the first dozen loaded. Anything a worker fetches or decides once, from its first run request, says nothing about the modules its later files need, so a per-worker shortcut shows up here as one round trip per module.
 
 Not measured for 4.1.10 vs 5.0.0 yet.
 

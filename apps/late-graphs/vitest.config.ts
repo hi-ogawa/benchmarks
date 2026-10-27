@@ -14,7 +14,6 @@ export default defineConfig({
   test: benchTest({
     environment: 'node',
     maxWorkers: 4,
-    setupFiles: ['./tests/setup.ts'],
     sequence: { sequencer: NameOrderSequencer },
   }),
 })
