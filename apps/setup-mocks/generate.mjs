@@ -2,12 +2,12 @@
 //
 // The shape of the 6,600-file suite reported in vitest-dev/vitest#11752:
 // `isolate: false`, a wide shared module graph, many test files, and a
-// handful of setup files that register `vi.mock` calls for every test file. A reused worker re-runs the
-// setup files before each of its files, so whatever the runtime does per
-// file or per run request (resolving setup files and their mock paths,
-// asking the main process for warm module snapshots, ...) is paid hundreds
-// of times per worker, and every round trip to the main process queues
-// behind the other workers' calls. No other app has mocking setup files, so
+// handful of setup files that register `vi.mock` calls for every test file.
+// A reused worker re-runs the setup files before each of its files, so
+// whatever the runtime does per file or per run request (resolving setup
+// files and their mock paths, asking the main process for warm module
+// snapshots, ...) is paid hundreds of times per worker, and every round trip
+// to the main process queues behind the other workers' calls. No other app has mocking setup files, so
 // none of them can see this cost.
 //
 //   - core: a binary tree of CORE modules; every test file evaluates all of
