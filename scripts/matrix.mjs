@@ -135,9 +135,11 @@ const APPS = {
     // isolate:true re-evaluates the 1500-module tree for every one of the
     // 800 files (~1 minute per rep), so it only runs in the full matrix;
     // the worker-count rows show how per-file round trips scale with the
-    // number of workers queueing on the main thread
+    // number of workers queueing on the main thread; with one worker all
+    // files share one run request and nothing else queues
     dims: { pool: ['forks', 'threads'], env: ['node'], isolate: [f], fsCache: [f, t], state: ['cold', 'warm'] },
     extra: [
+      { pool: 'forks', env: 'node', isolate: f, fsCache: f, state: 'warm', workers: '1' },
       { pool: 'forks', env: 'node', isolate: f, fsCache: f, state: 'warm', workers: '25%' },
       { pool: 'forks', env: 'node', isolate: f, fsCache: f, state: 'warm', workers: '50%' },
     ],
