@@ -114,6 +114,14 @@ const APPS = {
       { pool: 'forks', env: 'node', isolate: f, fsCache: f, state: 'warm', workers: '50%' },
     ],
   },
+  'enterprise-monolith-xl': {
+    best: { pool: 'threads', env: 'node', isolate: f, fsCache: t, state: 'warm' },
+    envs: ['node'],
+    primary: 'node',
+    // the same graph as enterprise-monolith with ~5x the files; isolate:true
+    // only gets slower in proportion, so it's left to the full matrix
+    dims: { pool: ['forks', 'threads'], env: ['node'], isolate: [f], fsCache: [f, t], state: ['warm'] },
+  },
   'long-haul': {
     best: { pool: 'vmForks', env: 'happy-dom', isolate: t, fsCache: f, state: 'warm', workers: '2' },
     envs: ['jsdom', 'happy-dom'],

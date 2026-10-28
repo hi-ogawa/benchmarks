@@ -14,6 +14,7 @@
 // Dimensions stressed: module graph scale (transform + per-file RPC fetch
 // waterfall), fs module cache cold/warm, isolate cost at scale, alias
 // resolution, mixed environments.
+import { pathToFileURL } from 'node:url'
 import { createApp, tsModule } from '../../tools/generator/helpers.mjs'
 
 const UTIL = 400
@@ -22,10 +23,12 @@ const SVC = 250
 const FEAT = 250
 const CHAIN = 60
 const GROUPS = 10
-const TESTS = 150
 const CYCLES = [20, 70, 120, 170, 220]
 
-const app = createApp(import.meta.url)
+// the -xl variant reuses this graph with more test files; the body stays
+// unindented so the template literals keep their output byte-for-byte
+export function generate(importMetaUrl, { name, tests: TESTS, jsdom = true }) {
+const app = createApp(importMetaUrl)
 
 for (let i = 0; i < UTIL; i++)
   app.write(`src/util/u${i}.ts`, tsModule(`u${i}`, i))
@@ -137,7 +140,7 @@ ${tsModule(`d${i}`, i)}`)
 for (let t = 0; t < TESTS; t++) {
   const feats = [(t * 3) % FEAT, (t * 3 + 11) % FEAT, (t * 3 + 23) % FEAT]
   const viaBarrel = t % 3 === 0
-  const dom = t % 10 === 7
+  const dom = jsdom && t % 10 === 7
   const imports = feats.map((f, idx) => viaBarrel && idx === 0
     ? `import { f${f}Render } from '../src/feat/group-${Math.floor(f / perGroup)}'`
     : `import { f${f}Render } from '../src/feat/f${f}'`)
@@ -184,4 +187,8 @@ ${extraTests.join('\n')}
 `)
 }
 
-app.report('enterprise-monolith', `${UTIL + CORE + SVC + FEAT + CHAIN + GROUPS} src modules + ${GROUPS} json, ${TESTS} test files (15 jsdom via pragma)`)
+app.report(name, `${UTIL + CORE + SVC + FEAT + CHAIN + GROUPS} src modules + ${GROUPS} json, ${TESTS} test files (${jsdom ? Math.ceil((TESTS - 7) / 10) : 0} jsdom via pragma)`)
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href)
+  generate(import.meta.url, { name: 'enterprise-monolith', tests: 150 })

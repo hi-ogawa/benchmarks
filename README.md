@@ -2,7 +2,7 @@
 
 > The apps, generators, and bench runner in this repository were generated with [Claude Fable 5](https://www.anthropic.com/news/claude-fable-5-mythos-5) and reviewed by the Vitest team. The results below were measured by hand on the hardware stated in each section.
 
-Generated reference apps for measuring Vitest performance. Each app stands for one kind of project: a tiny utility package, a library, barrel-file graphs, DOM component suites, a dependency-heavy service, a 1300-module monolith, a long-running DOM suite, a large non-isolated suite with mocking setup files, and a non-isolated suite whose later files reuse graphs other workers loaded. The bench runner measures the options that change run time on each of them: `pool`, `environment` (jsdom, happy-dom, and headless Chromium via browser mode), `isolate`, `fsModuleCache`, `maxWorkers`, and cold vs warm caches.
+Generated reference apps for measuring Vitest performance. Each app stands for one kind of project: a tiny utility package, a library, barrel-file graphs, DOM component suites, a dependency-heavy service, a 1300-module monolith (and a variant with 800 test files), a long-running DOM suite, a large non-isolated suite with mocking setup files, and a non-isolated suite whose later files reuse graphs other workers loaded. The bench runner measures the options that change run time on each of them: `pool`, `environment` (jsdom, happy-dom, and headless Chromium via browser mode), `isolate`, `fsModuleCache`, `maxWorkers`, and cold vs warm caches.
 
 ## Usage
 
@@ -243,6 +243,12 @@ A large monorepo: about 1280 modules with 12-deep import chains, import cycles, 
 | threads | false | false | default | 2.12s | 2.16s | +2% | 2.49s | 2.42s | −3% |
 | **threads** | **false** | **true** | **default** | 2.48s | 2.45s | ~0 | 1.90s | 1.98s | +5% |
 | forks | false | false | 50% | — | — | — | 3.36s | 3.17s | −6% |
+
+### enterprise-monolith-xl
+
+enterprise-monolith's graph with 800 test files instead of 150, from the same generator, all in the node environment. That is about 70 files per worker on 12 cores instead of about 14, so under `isolate: false` whatever a reused worker pays per file over a large shared graph is paid five times as often. The original's jsdom files are left out: a worker isn't reused across environments, so mixing them in replaces workers every few files. The default matrix runs only `isolate: false`.
+
+Not measured for 4.1.10 vs 5.0.0 yet.
 
 ### long-haul
 
