@@ -275,6 +275,8 @@ Not measured for 4.1.10 vs 5.0.0 yet.
 
 A non-isolated suite where every worker's first test file is trivial and later files reuse large graphs that files on other workers loaded earlier: 4 trivial files that sort first (the app sorts files by name and fixes `maxWorkers` to 4), then 24 test files sharing 12 chains of 250 modules, so the second dozen reuses the chains the first dozen loaded. Anything a worker fetches or decides once, from its first run request, says nothing about the modules its later files need, so a per-worker shortcut shows up here as one round trip per module.
 
+`node generate.mjs --chain=L` sets the chain length (default 250), which scales how many of those round trips a later file pays. The matrix uses the default.
+
 Not measured for 4.1.10 vs 5.0.0 yet.
 
 ### cpu-bound

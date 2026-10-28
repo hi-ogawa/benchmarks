@@ -19,7 +19,9 @@ import { createApp, tsModule } from '../../tools/generator/helpers.mjs'
 const TRIVIAL = 4
 const CHAINS = 12
 const HEAVY = 24
-const CHAIN = 250
+// `--chain=L` sets the chain length, which is how many round trips a later
+// file pays when nothing tells its worker about the chain in advance
+const CHAIN = Number(process.argv.find(a => a.startsWith('--chain='))?.slice('--chain='.length) ?? 250)
 
 const app = createApp(import.meta.url)
 
