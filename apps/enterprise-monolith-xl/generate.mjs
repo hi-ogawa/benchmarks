@@ -10,4 +10,8 @@
 // that count, which the smaller app keeps too low to see.
 import { generate } from '../enterprise-monolith/generate.mjs'
 
-generate(import.meta.url, { name: 'enterprise-monolith-xl', tests: 800, jsdom: false })
+// `--shared=N` adds an N-module tree that every test file walks, the part of
+// the graph a reused worker already has when its next file starts
+const shared = Number(process.argv.find(a => a.startsWith('--shared='))?.slice('--shared='.length) ?? 0)
+
+generate(import.meta.url, { name: 'enterprise-monolith-xl', tests: 800, jsdom: false, shared })
